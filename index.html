@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>MAKEROBOT Controller</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f4f6f8;color:#17202a;font-family:Arial,Helvetica,sans-serif}
+header{background:#111827;color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.logo{font-size:22px;font-weight:800;letter-spacing:.5px}.status{font-size:13px;display:flex;align-items:center;gap:7px}
+.dot{width:10px;height:10px;border-radius:50%;background:#ef4444}.dot.connected{background:#22c55e}
+main{max-width:1050px;margin:auto;padding:18px}
+.card{background:#fff;border-radius:16px;padding:18px;margin-bottom:18px;box-shadow:0 3px 14px #00000010}
+h2{margin:0 0 12px;font-size:18px}
+button{border:0;border-radius:12px;padding:12px 18px;font-weight:700;font-size:15px;cursor:pointer;touch-action:none}
+.primary{background:#2563eb;color:#fff}.secondary{background:#e5e7eb;color:#111827}.danger{background:#dc2626;color:#fff}
+.controls{display:flex;gap:10px;flex-wrap:wrap}
+.controller{display:grid;grid-template-columns:90px 90px 90px;grid-template-rows:70px 70px 70px;gap:10px;justify-content:center;align-items:center;margin:12px auto}
+.controller button{height:70px;font-size:26px;padding:0}
+.up{grid-column:2}.left{grid-column:1;grid-row:2}.stop{grid-column:2;grid-row:2;background:#111827;color:#fff}.right{grid-column:3;grid-row:2}.down{grid-column:2;grid-row:3}
+.ab{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:280px;margin:15px auto}
+.ab button{height:55px}
+.readout{background:#0b1220;color:#dbeafe;border-radius:12px;min-height:230px;max-height:420px;overflow:auto;padding:14px;font-family:Consolas,monospace;font-size:14px}
+.row{padding:7px 0;border-bottom:1px solid #ffffff14;word-break:break-word}.row:last-child{border:0}.time{color:#94a3b8;margin-right:10px}
+.latest{font-size:24px;font-weight:800;background:#eef2ff;border-radius:12px;padding:16px;margin-bottom:12px;min-height:60px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+input{width:100%;padding:11px;border:1px solid #d1d5db;border-radius:9px;font-size:15px}
+.small{color:#64748b;font-size:13px;line-height:1.5}
+@media(max-width:700px){.grid{grid-template-columns:1fr}main{padding:12px}.controller{grid-template-columns:75px 75px 75px;grid-template-rows:65px 65px 65px}.controller button{height:65px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">MAKEROBOT</div>
+  <div class="status"><span id="dot" class="dot"></span><span id="status">Disconnected</span></div>
+</header>
+
+<main>
+<section class="card">
+  <h2>Bluetooth</h2>
+  <div class="controls">
+    <button id="connect" class="primary">Connect micro:bit</button>
+    <button id="disconnect" class="secondary" disabled>Disconnect</button>
+    <button id="clear" class="secondary">Clear Data</button>
+    <button id="save" class="secondary">Save CSV</button>
+  </div>
+  <p class="small">The controller uses the micro:bit Nordic UART Service. Incoming UART text is displayed below while control commands are sent through the same Bluetooth connection.</p>
+</section>
+
+<div class="grid">
+<section class="card">
+  <h2>Robot Control</h2>
+  <div class="controller">
+    <button class="up" data-cmd="F">▲</button>
+    <button class="left" data-cmd="L">◀</button>
+    <button class="stop" data-cmd="S">■</button>
+    <button class="right" data-cmd="R">▶</button>
+    <button class="down" data-cmd="B">▼</button>
+  </div>
+  <div class="ab">
+    <button class="primary" data-cmd="A">A</button>
+    <button class="primary" data-cmd="B">B</button>
+  </div>
+  <p class="small">Press and hold a direction/button to keep sending its command. Releasing it automatically sends <b>S</b> (stop), including A and B.</p>
+</section>
+
+<section class="card">
+  <h2>Latest micro:bit Data</h2>
+  <div id="latest" class="latest">Waiting for data…</div>
+  <p class="small">Any string sent by the micro:bit through Bluetooth UART will appear here and in the data log.</p>
+</section>
+</div>
+
+<section class="card">
+  <h2>Received String Data</h2>
+  <div id="log" class="readout"><div class="small">No data received yet.</div></div>
+</section>
+</main>
+
+<script>
+const UART_SERVICE='6e400001-b5a3-f393-e0a9-e50e24dcca9e';
+const UART_TX='6e400002-b5a3-f393-e0a9-e50e24dcca9e'; // browser -> micro:bit
+const UART_RX='6e400003-b5a3-f393-e0a9-e50e24dcca9e'; // micro:bit -> browser
+
+let device=null,server=null,tx=null,rx=null,buffer='',records=[];
+const enc=new TextEncoder(),dec=new TextDecoder();
+const $=id=>document.getElementById(id);
+
+function status(t,on=false){$('status').textContent=t;$('dot').classList.toggle('connected',on);$('connect').disabled=on;$('disconnect').disabled=!on}
+function safe(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+
+function addData(text){
+  if(!text)return;
+  records.push({time:new Date().toISOString(),data:text});
+  $('latest').textContent=text;
+  const placeholder=$('log').querySelector('.small');
+  if(placeholder && $('log').children.length===1 && placeholder.textContent.includes('No data')) $('log').innerHTML='';
+  const d=document.createElement('div');d.className='row';
+  d.innerHTML='<span class="time">'+new Date().toLocaleTimeString()+'</span>'+safe(text);
+  $('log').appendChild(d);$('log').scrollTop=$('log').scrollHeight;
+}
+function incoming(text){
+  buffer+=text;
+  const parts=buffer.split(/\r?\n/); buffer=parts.pop();
+  parts.forEach(addData);
+}
+
+async function connect(){
+  if(!navigator.bluetooth){alert('Web Bluetooth is not supported in this browser. Use Chrome or Edge on HTTPS/localhost.');return}
+  try{
+    status('Selecting…');
+    device=await navigator.bluetooth.requestDevice({
+      filters:[{services:[UART_SERVICE]}],optionalServices:[UART_SERVICE]
+    });
+    device.addEventListener('gattserverdisconnected',disconnected);
+    status('Connecting…');
+    server=await device.gatt.connect();
+    const service=await server.getPrimaryService(UART_SERVICE);
+    tx=await service.getCharacteristic(UART_TX);
+    rx=await service.getCharacteristic(UART_RX);
+    await rx.startNotifications();
+    rx.addEventListener('characteristicvaluechanged',e=>incoming(dec.decode(e.target.value)));
+    status('Connected: '+(device.name||'micro:bit'),true);
+  }catch(e){
+    console.error(e);status('Disconnected');
+    if(e.name!=='NotFoundError')alert('Bluetooth connection failed: '+e.message);
+  }
+}
+function disconnected(){tx=null;rx=null;server=null;status('Disconnected')}
+function disconnect(){if(device?.gatt?.connected)device.gatt.disconnect();else disconnected()}
+
+async function send(cmd){
+  if(!tx || !device?.gatt?.connected)return;
+  try{
+    // newline makes the command easy to parse with micro:bit UART blocks/code
+    await tx.writeValue(enc.encode(cmd+'\\n'));
+  }catch(e){console.error('Send failed',e)}
+}
+
+const held=new Map();
+function startControl(btn){
+  const cmd=btn.dataset.cmd;if(held.has(btn))return;
+  send(cmd);
+  held.set(btn,setInterval(()=>send(cmd),120));
+}
+function stopControl(btn){
+  if(!held.has(btn))return;
+  clearInterval(held.get(btn));held.delete(btn);send('S');
+}
+document.querySelectorAll('[data-cmd]').forEach(btn=>{
+  btn.addEventListener('pointerdown',e=>{e.preventDefault();startControl(btn)});
+  btn.addEventListener('pointerup',e=>{e.preventDefault();stopControl(btn)});
+  btn.addEventListener('pointercancel',()=>stopControl(btn));
+  btn.addEventListener('pointerleave',()=>{if(e=>false){}});
+});
+window.addEventListener('pointerup',()=>held.forEach((_,btn)=>stopControl(btn)));
+window.addEventListener('blur',()=>held.forEach((_,btn)=>stopControl(btn)));
+
+document.addEventListener('keydown',e=>{
+  const map={ArrowUp:'F',ArrowDown:'B',ArrowLeft:'L',ArrowRight:'R',a:'A',A:'A',b:'B',B:'B', ' ':'S'};
+  if(map[e.key]){
+    e.preventDefault();
+    const btn=[...document.querySelectorAll('[data-cmd]')].find(x=>x.dataset.cmd===map[e.key]);
+    if(btn)startControl(btn);
+  }
+});
+document.addEventListener('keyup',e=>{
+  const map={ArrowUp:'F',ArrowDown:'B',ArrowLeft:'L',ArrowRight:'R',a:'A',A:'A',b:'B',B:'B'};
+  if(map[e.key]){
+    e.preventDefault();
+    const btn=[...document.querySelectorAll('[data-cmd]')].find(x=>x.dataset.cmd===map[e.key]);
+    if(btn)stopControl(btn);
+  }
+});
+
+$('connect').onclick=connect;$('disconnect').onclick=disconnect;
+$('clear').onclick=()=>{$('log').innerHTML='<div class="small">No data received yet.</div>';$('latest').textContent='Waiting for data…';records=[];buffer=''};
+$('save').onclick=()=>{
+  const csv='timestamp,data\\n'+records.map(r=>`"${r.time}","${r.data.replaceAll('"','""')}"`).join('\\n');
+  const url=URL.createObjectURL(new Blob([csv],{type:'text/csv'})),a=document.createElement('a');
+  a.href=url;a.download='makerobot-data.csv';a.click();URL.revokeObjectURL(url);
+};
+window.addEventListener('beforeunload',()=>device?.gatt?.disconnect());
+</script>
+</body>
+</html>
