@@ -157,9 +157,6 @@
         const dot = document.getElementById('dot');
 
         connectBtn.addEventListener('click', async () => {
-            // Force the window to gain keyboard focus after clicking connect
-            window.focus(); 
-
             if (bluetoothDevice && bluetoothDevice.gatt.connected) {
                 bluetoothDevice.gatt.disconnect();
                 return;
@@ -186,6 +183,9 @@
                 statusText.innerText = "Connected";
                 dot.classList.add('connected');
                 connectBtn.innerText = "Disconnect";
+                
+                // Force focus on the body so keys are captured immediately
+                document.body.focus(); 
 
             } catch (error) {
                 console.error("Connection failed", error);
@@ -193,6 +193,120 @@
             }
         });
 
+        async function sendCommand(cmd) {
+            if (!txCharacteristic) return;
+            try {
+                let encoder = new TextEncoder();
+                let data = encoder.encode(cmd + "#");
+                
+                if (txCharacteristic.properties.writeWithoutResponse) {
+                    await txCharacteristic.writeValueWithoutResponse(data);
+                } else if (txCharacteristic.properties.write) {
+                    await txCharacteristic.writeValue(data);
+                }
+            } catch (error) {
+                console.error("Send error details:", error);
+            }
+        }
+
+        // --- MOUSE / TOUCH CONTROLS ---
+        const buttons = document.querySelectorAll('.cmd-btn');
+        buttons.forEach(btn => {
+            const command = btn.getAttribute('data-cmd');
+
+            btn.addEventListener('pointerdown', (e) => {
+                btn.classList.add('active');
+                sendCommand(command);
+            });
+
+            btn.addEventListener('pointerup', (e) => {
+                btn.classList.remove('active');
+                if (['F', 'B', 'L', 'R'].includes(command)) { sendCommand('S'); }
+            });
+
+            btn.addEventListener('pointerleave', (e) => {
+                if(btn.classList.contains('active')) {
+                    btn.classList.remove('active');
+                    if (['F', 'B', 'L', 'R'].includes(command)) { sendCommand('S'); }
+                }
+            });
+        });
+
+        // --- BULLETPROOF KEYBOARD CONTROLS ---
+        
+        let currentlyPressedKey = null;
+
+        // Attach to both document and window just to be safe
+        document.addEventListener('keydown', function(e) {
+            // Stop arrow keys from scrolling the webpage
+            if([37, 38, 39, 40].indexOf(e.keyCode) > -1) {
+                e.preventDefault();
+            }
+
+            // Prevent repeat firing if held down
+            if (e.repeat) return;
+            
+            let cmd = null;
+            let btnClass = null;
+
+            // Check standard key names or fallback keyCodes
+            if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || e.keyCode === 38 || e.keyCode === 87) { 
+                cmd = 'F'; btnClass = '.up'; 
+            }
+            else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S' || e.keyCode === 40 || e.keyCode === 83) { 
+                cmd = 'B'; btnClass = '.down'; 
+            }
+            else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A' || e.keyCode === 37 || e.keyCode === 65) { 
+                cmd = 'L'; btnClass = '.left'; 
+            }
+            else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D' || e.keyCode === 39 || e.keyCode === 68) { 
+                cmd = 'R'; btnClass = '.right'; 
+            }
+
+            if (cmd && currentlyPressedKey !== cmd) {
+                currentlyPressedKey = cmd;
+                sendCommand(cmd);
+                
+                const btn = document.querySelector(btnClass);
+                if (btn) btn.classList.add('active');
+            }
+        });
+
+        document.addEventListener('keyup', function(e) {
+            let isMovementKey = false;
+            let btnClass = null;
+
+            if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || e.keyCode === 38 || e.keyCode === 87) { 
+                isMovementKey = true; btnClass = '.up'; 
+            }
+            else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S' || e.keyCode === 40 || e.keyCode === 83) { 
+                isMovementKey = true; btnClass = '.down'; 
+            }
+            else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A' || e.keyCode === 37 || e.keyCode === 65) { 
+                isMovementKey = true; btnClass = '.left'; 
+            }
+            else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D' || e.keyCode === 39 || e.keyCode === 68) { 
+                isMovementKey = true; btnClass = '.right'; 
+            }
+
+            if (isMovementKey) {
+                currentlyPressedKey = null;
+                sendCommand('S'); 
+                
+                const btn = document.querySelector(btnClass);
+                if (btn) btn.classList.remove('active');
+            }
+        });
+        
+        // Final safety: if the browser window loses focus while a key is held down, stop the robot
+        window.addEventListener('blur', function() {
+            if (currentlyPressedKey) {
+                sendCommand('S');
+                currentlyPressedKey = null;
+                document.querySelectorAll('.cmd-btn').forEach(b => b.classList.remove('active'));
+            }
+        });
+    </script>
         async function sendCommand(cmd) {
             if (!txCharacteristic) return;
             try {
