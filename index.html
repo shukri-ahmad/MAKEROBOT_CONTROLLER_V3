@@ -262,7 +262,7 @@
             try {
                 let encoder = new TextEncoder();
                 // Adding a newline character as MakeCode usually reads "until new line"
-                await txCharacteristic.writeValue(encoder.encode(cmd + "\n"));
+                await txCharacteristic.writeValueWithoutResponse(encoder.encode(cmd + "\n"));
                 console.log("Sent:", cmd);
             } catch (error) {
                 console.error("Send error", error);
