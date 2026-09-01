@@ -207,7 +207,6 @@
             }
         }
 
-        // --- MOUSE / TOUCH CONTROLS ---
         const buttons = document.querySelectorAll('.cmd-btn');
         buttons.forEach(btn => {
             const command = btn.getAttribute('data-cmd');
@@ -230,11 +229,9 @@
             });
         });
 
-        // --- BULLETPROOF KEYBOARD CONTROLS ---
         let currentlyPressedKey = null;
 
         document.addEventListener('keydown', function(e) {
-            // Stop arrow keys from scrolling the webpage
             if([37, 38, 39, 40].indexOf(e.keyCode) > -1) {
                 e.preventDefault();
             }
@@ -244,7 +241,6 @@
             let cmd = null;
             let btnClass = null;
 
-            // MOVEMENT KEYS (WASD / Arrows)
             if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || e.keyCode === 38 || e.keyCode === 87) { 
                 cmd = 'F'; btnClass = '.up'; 
             }
@@ -257,7 +253,6 @@
             else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D' || e.keyCode === 39 || e.keyCode === 68) { 
                 cmd = 'R'; btnClass = '.right'; 
             }
-            // NUMBER ACTION KEYS (1, 2, 3, 4)
             else if (e.key === '1' || e.keyCode === 49) { 
                 cmd = '1'; btnClass = '.btn-1';
             }
@@ -285,7 +280,6 @@
             let isActionKey = false;
             let btnClass = null;
 
-            // Check Movement
             if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || e.keyCode === 38 || e.keyCode === 87) { 
                 isMovementKey = true; btnClass = '.up'; 
             }
@@ -298,7 +292,6 @@
             else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D' || e.keyCode === 39 || e.keyCode === 68) { 
                 isMovementKey = true; btnClass = '.right'; 
             }
-            // Check Actions
             else if (e.key === '1' || e.keyCode === 49) { 
                 isActionKey = true; btnClass = '.btn-1'; 
             }
@@ -314,7 +307,7 @@
 
             if (isMovementKey) {
                 currentlyPressedKey = null;
-                sendCommand('S'); // Send Stop command when letting go of directions
+                sendCommand('S'); 
                 
                 const btn = document.querySelector(btnClass);
                 if (btn) btn.classList.remove('active');
