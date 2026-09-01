@@ -128,7 +128,7 @@
         </div>
     </header>
 
-    <main>
+    <main id="gamepadArea">
         <div class="d-pad">
             <button class="cmd-btn up" data-cmd="F">▲</button>
             <button class="cmd-btn left" data-cmd="L">◀</button>
@@ -157,6 +157,9 @@
         const dot = document.getElementById('dot');
 
         connectBtn.addEventListener('click', async () => {
+            // Force the window to gain keyboard focus after clicking connect
+            window.focus(); 
+
             if (bluetoothDevice && bluetoothDevice.gatt.connected) {
                 bluetoothDevice.gatt.disconnect();
                 return;
@@ -201,8 +204,6 @@
                 } else if (txCharacteristic.properties.write) {
                     await txCharacteristic.writeValue(data);
                 }
-                
-                console.log("Sent:", cmd);
             } catch (error) {
                 console.error("Send error details:", error);
             }
@@ -231,42 +232,48 @@
             });
         });
 
-        // --- KEYBOARD CONTROLS ---
-        document.addEventListener('keydown', (e) => {
-            // CRITICAL: Prevent sending 100 commands per second if the user holds the key down
-            if (e.repeat) return; 
+        // --- KEYBOARD CONTROLS (Updated to window listener for better reliability) ---
+        
+        // Keep track of which key is currently pressed so we don't spam commands
+        let currentKey = null;
 
+        window.addEventListener('keydown', (e) => {
+            // Ignore if they are holding the key down (prevents flooding bluetooth)
+            if (e.repeat) return; 
+            
             let cmd = null;
             let btnClass = null;
+            let key = e.key.toLowerCase();
 
-            switch(e.key) {
-                case 'ArrowUp':    case 'w': case 'W': cmd = 'F'; btnClass = '.up'; break;
-                case 'ArrowDown':  case 's': case 'S': cmd = 'B'; btnClass = '.down'; break;
-                case 'ArrowLeft':  case 'a': case 'A': cmd = 'L'; btnClass = '.left'; break;
-                case 'ArrowRight': case 'd': case 'D': cmd = 'R'; btnClass = '.right'; break;
-            }
+            if (key === 'arrowup' || key === 'w') { cmd = 'F'; btnClass = '.up'; }
+            else if (key === 'arrowdown' || key === 's') { cmd = 'B'; btnClass = '.down'; }
+            else if (key === 'arrowleft' || key === 'a') { cmd = 'L'; btnClass = '.left'; }
+            else if (key === 'arrowright' || key === 'd') { cmd = 'R'; btnClass = '.right'; }
 
             if (cmd) {
+                currentKey = key;
                 sendCommand(cmd);
-                // Visually press the button on the screen
+                
+                // Visually press the button
                 const btn = document.querySelector(btnClass);
                 if (btn) btn.classList.add('active');
             }
         });
 
-        document.addEventListener('keyup', (e) => {
+        window.addEventListener('keyup', (e) => {
+            let key = e.key.toLowerCase();
             let isMovementKey = false;
             let btnClass = null;
 
-            switch(e.key) {
-                case 'ArrowUp':    case 'w': case 'W': isMovementKey = true; btnClass = '.up'; break;
-                case 'ArrowDown':  case 's': case 'S': isMovementKey = true; btnClass = '.down'; break;
-                case 'ArrowLeft':  case 'a': case 'A': isMovementKey = true; btnClass = '.left'; break;
-                case 'ArrowRight': case 'd': case 'D': isMovementKey = true; btnClass = '.right'; break;
-            }
+            if (key === 'arrowup' || key === 'w') { isMovementKey = true; btnClass = '.up'; }
+            else if (key === 'arrowdown' || key === 's') { isMovementKey = true; btnClass = '.down'; }
+            else if (key === 'arrowleft' || key === 'a') { isMovementKey = true; btnClass = '.left'; }
+            else if (key === 'arrowright' || key === 'd') { isMovementKey = true; btnClass = '.right'; }
 
             if (isMovementKey) {
-                sendCommand('S'); // Send stop when key is released
+                currentKey = null;
+                sendCommand('S'); // Stop robot when key is released
+                
                 // Visually un-press the button
                 const btn = document.querySelector(btnClass);
                 if (btn) btn.classList.remove('active');
