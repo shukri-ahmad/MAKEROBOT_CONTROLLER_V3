@@ -106,10 +106,10 @@
             border-color: var(--primary);
         }
 
-        .btn-y { grid-column: 1; grid-row: 1; }
-        .btn-x { grid-column: 2; grid-row: 2; }
-        .btn-b { grid-column: 1; grid-row: 2; }
-        .btn-a { grid-column: 2; grid-row: 1; }
+        .btn-4 { grid-column: 1; grid-row: 1; }
+        .btn-3 { grid-column: 2; grid-row: 2; }
+        .btn-1 { grid-column: 1; grid-row: 2; }
+        .btn-2 { grid-column: 2; grid-row: 1; }
 
         @media screen and (orientation: portrait) {
             main { flex-direction: column; justify-content: center; gap: 50px; }
@@ -137,10 +137,10 @@
         </div>
 
         <div class="action-pad">
-            <button class="cmd-btn btn-y" data-cmd="Y" title="Key: I">Y</button>
-            <button class="cmd-btn btn-a" data-cmd="A" title="Key: J or Spacebar">A</button>
-            <button class="cmd-btn btn-b" data-cmd="B_ACT" title="Key: K or Shift">B</button>
-            <button class="cmd-btn btn-x" data-cmd="X" title="Key: U">X</button>
+            <button class="cmd-btn btn-4" data-cmd="4" title="Key: 4">4</button>
+            <button class="cmd-btn btn-2" data-cmd="2" title="Key: 2">2</button>
+            <button class="cmd-btn btn-1" data-cmd="1" title="Key: 1">1</button>
+            <button class="cmd-btn btn-3" data-cmd="3" title="Key: 3">3</button>
         </div>
     </main>
 
@@ -234,8 +234,8 @@
         let currentlyPressedKey = null;
 
         document.addEventListener('keydown', function(e) {
-            // Stop arrow keys AND spacebar (32) from scrolling the webpage
-            if([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
+            // Stop arrow keys from scrolling the webpage
+            if([37, 38, 39, 40].indexOf(e.keyCode) > -1) {
                 e.preventDefault();
             }
 
@@ -257,18 +257,18 @@
             else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D' || e.keyCode === 39 || e.keyCode === 68) { 
                 cmd = 'R'; btnClass = '.right'; 
             }
-            // ACTION KEYS
-            else if (e.key === 'j' || e.key === 'J' || e.key === ' ' || e.keyCode === 74 || e.keyCode === 32) { 
-                cmd = 'A'; btnClass = '.btn-a'; // J or Spacebar
+            // NUMBER ACTION KEYS (1, 2, 3, 4)
+            else if (e.key === '1' || e.keyCode === 49) { 
+                cmd = '1'; btnClass = '.btn-1';
             }
-            else if (e.key === 'k' || e.key === 'K' || e.key === 'Shift' || e.keyCode === 75 || e.keyCode === 16) { 
-                cmd = 'B_ACT'; btnClass = '.btn-b'; // K or Shift
+            else if (e.key === '2' || e.keyCode === 50) { 
+                cmd = '2'; btnClass = '.btn-2';
             }
-            else if (e.key === 'u' || e.key === 'U' || e.keyCode === 85) { 
-                cmd = 'X'; btnClass = '.btn-x'; // U
+            else if (e.key === '3' || e.keyCode === 51) { 
+                cmd = '3'; btnClass = '.btn-3';
             }
-            else if (e.key === 'i' || e.key === 'I' || e.keyCode === 73) { 
-                cmd = 'Y'; btnClass = '.btn-y'; // I
+            else if (e.key === '4' || e.keyCode === 52) { 
+                cmd = '4'; btnClass = '.btn-4';
             }
 
             if (cmd && currentlyPressedKey !== cmd) {
@@ -299,17 +299,17 @@
                 isMovementKey = true; btnClass = '.right'; 
             }
             // Check Actions
-            else if (e.key === 'j' || e.key === 'J' || e.key === ' ' || e.keyCode === 74 || e.keyCode === 32) { 
-                isActionKey = true; btnClass = '.btn-a'; 
+            else if (e.key === '1' || e.keyCode === 49) { 
+                isActionKey = true; btnClass = '.btn-1'; 
             }
-            else if (e.key === 'k' || e.key === 'K' || e.key === 'Shift' || e.keyCode === 75 || e.keyCode === 16) { 
-                isActionKey = true; btnClass = '.btn-b'; 
+            else if (e.key === '2' || e.keyCode === 50) { 
+                isActionKey = true; btnClass = '.btn-2'; 
             }
-            else if (e.key === 'u' || e.key === 'U' || e.keyCode === 85) { 
-                isActionKey = true; btnClass = '.btn-x'; 
+            else if (e.key === '3' || e.keyCode === 51) { 
+                isActionKey = true; btnClass = '.btn-3'; 
             }
-            else if (e.key === 'i' || e.key === 'I' || e.keyCode === 73) { 
-                isActionKey = true; btnClass = '.btn-y'; 
+            else if (e.key === '4' || e.keyCode === 52) { 
+                isActionKey = true; btnClass = '.btn-4'; 
             }
 
             if (isMovementKey) {
@@ -321,8 +321,6 @@
             } 
             else if (isActionKey) {
                 currentlyPressedKey = null;
-                // We generally DO NOT send 'S' for action buttons so they can be read as single presses
-                // Just remove the visual glowing effect
                 const btn = document.querySelector(btnClass);
                 if (btn) btn.classList.remove('active');
             }
