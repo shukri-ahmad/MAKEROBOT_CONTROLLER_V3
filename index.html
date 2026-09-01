@@ -17,7 +17,7 @@
 
         * {
             box-sizing: border-box;
-            user-select: none; /* Prevent text selection on mobile */
+            user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -33,7 +33,6 @@
             overflow: hidden;
         }
 
-        /* Header & Connection Bar */
         header {
             display: flex;
             justify-content: space-between;
@@ -52,74 +51,31 @@
             text-shadow: 0 0 10px rgba(0, 210, 255, 0.3);
         }
 
-        .controls {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        #status {
-            font-size: 0.9rem;
-            color: #888;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background-color: #888;
-        }
-
+        .controls { display: flex; align-items: center; gap: 15px; }
+        
+        #status { font-size: 0.9rem; color: #888; display: flex; align-items: center; gap: 5px; }
+        
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; background-color: #888; }
         .status-dot.connected { background-color: #00ff88; box-shadow: 0 0 8px #00ff88; }
 
         .btn-connect {
-            background: transparent;
-            color: var(--primary);
-            border: 2px solid var(--primary);
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-            cursor: pointer;
+            background: transparent; color: var(--primary); border: 2px solid var(--primary);
+            padding: 8px 15px; border-radius: 20px; font-weight: bold; cursor: pointer;
             transition: all 0.2s ease;
         }
-
         .btn-connect:active { background: var(--primary); color: #000; }
 
-        /* Gamepad Layout */
-        main {
-            flex: 1;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 40px;
-        }
+        main { flex: 1; display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; }
 
-        /* D-Pad (Left Side) */
-        .d-pad {
-            display: grid;
-            grid-template-columns: repeat(3, 70px);
-            grid-template-rows: repeat(3, 70px);
-            gap: 10px;
-        }
-
+        .d-pad { display: grid; grid-template-columns: repeat(3, 70px); grid-template-rows: repeat(3, 70px); gap: 10px; }
+        
         .d-pad button {
-            background-color: var(--btn-bg);
-            border: none;
-            border-radius: 15px;
-            color: white;
-            font-size: 1.5rem;
-            box-shadow: 0 6px 0 var(--btn-shadow), 0 10px 15px rgba(0,0,0,0.5);
-            transition: all 0.1s;
+            background-color: var(--btn-bg); border: none; border-radius: 15px; color: white;
+            font-size: 1.5rem; box-shadow: 0 6px 0 var(--btn-shadow), 0 10px 15px rgba(0,0,0,0.5);
         }
-
-        .d-pad button:active {
-            transform: translateY(6px);
-            box-shadow: 0 0 0 var(--btn-shadow), 0 0 15px var(--primary);
-            background-color: var(--primary);
-            color: black;
+        .d-pad button:active, .d-pad button.active {
+            transform: translateY(6px); box-shadow: 0 0 0 var(--btn-shadow), 0 0 15px var(--primary);
+            background-color: var(--primary); color: black;
         }
 
         .up { grid-column: 2; grid-row: 1; border-radius: 15px 15px 5px 5px !important; }
@@ -128,39 +84,22 @@
         .down { grid-column: 2; grid-row: 3; border-radius: 5px 5px 15px 15px !important; }
         
         .stop { 
-            grid-column: 2; grid-row: 2; 
-            border-radius: 50% !important; 
-            background: var(--danger) !important; 
-            font-size: 1rem !important;
+            grid-column: 2; grid-row: 2; border-radius: 50% !important; 
+            background: var(--danger) !important; font-size: 1rem !important;
         }
-        .stop:active {
-            box-shadow: 0 0 0 var(--btn-shadow), 0 0 15px var(--danger) !important;
-        }
+        .stop:active, .stop.active { box-shadow: 0 0 0 var(--btn-shadow), 0 0 15px var(--danger) !important; }
 
-        /* Action Buttons (Right Side) */
         .action-pad {
-            display: grid;
-            grid-template-columns: repeat(3, 60px);
-            grid-template-rows: repeat(3, 60px);
-            gap: 15px;
-            transform: rotate(45deg);
+            display: grid; grid-template-columns: repeat(3, 60px); grid-template-rows: repeat(3, 60px);
+            gap: 15px; transform: rotate(45deg);
         }
-
         .action-pad button {
-            background-color: var(--btn-bg);
-            border: 2px solid #444;
-            border-radius: 50%;
-            color: white;
-            font-size: 1.2rem;
-            font-weight: bold;
-            box-shadow: inset 0 -4px 0 rgba(0,0,0,0.5), 0 5px 10px rgba(0,0,0,0.5);
-            transition: all 0.1s;
-            transform: rotate(-45deg); /* Keep text upright */
+            background-color: var(--btn-bg); border: 2px solid #444; border-radius: 50%; color: white;
+            font-size: 1.2rem; font-weight: bold; box-shadow: inset 0 -4px 0 rgba(0,0,0,0.5), 0 5px 10px rgba(0,0,0,0.5);
+            transform: rotate(-45deg);
         }
-
-        .action-pad button:active {
-            transform: rotate(-45deg) scale(0.9);
-            box-shadow: inset 0 0 0 rgba(0,0,0,0.5), 0 0 15px var(--primary);
+        .action-pad button:active, .action-pad button.active {
+            transform: rotate(-45deg) scale(0.9); box-shadow: inset 0 0 0 rgba(0,0,0,0.5), 0 0 15px var(--primary);
             border-color: var(--primary);
         }
 
@@ -169,13 +108,8 @@
         .btn-b { grid-column: 1; grid-row: 2; }
         .btn-a { grid-column: 2; grid-row: 1; }
 
-        /* Mobile Landscape Enforcer */
         @media screen and (orientation: portrait) {
-            main {
-                flex-direction: column;
-                justify-content: center;
-                gap: 50px;
-            }
+            main { flex-direction: column; justify-content: center; gap: 50px; }
             .action-pad { margin-top: 20px; }
         }
     </style>
@@ -191,7 +125,6 @@
     </header>
 
     <main>
-        <!-- Directional Pad -->
         <div class="d-pad">
             <button class="cmd-btn up" data-cmd="F">▲</button>
             <button class="cmd-btn left" data-cmd="L">◀</button>
@@ -200,7 +133,6 @@
             <button class="cmd-btn down" data-cmd="B">▼</button>
         </div>
 
-        <!-- Action Pad -->
         <div class="action-pad">
             <button class="cmd-btn btn-y" data-cmd="Y">Y</button>
             <button class="cmd-btn btn-a" data-cmd="A">A</button>
@@ -210,7 +142,6 @@
     </main>
 
     <script>
-        // Web Bluetooth API Setup (Standard micro:bit UART Service)
         const UART_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
         const UART_TX_CHAR_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
 
@@ -234,7 +165,12 @@
                     optionalServices: [UART_SERVICE_UUID]
                 });
 
-                bluetoothDevice.addEventListener('gattserverdisconnected', onDisconnected);
+                bluetoothDevice.addEventListener('gattserverdisconnected', () => {
+                    statusText.innerText = "Disconnected";
+                    dot.classList.remove('connected');
+                    connectBtn.innerText = "Connect";
+                    txCharacteristic = null;
+                });
 
                 const server = await bluetoothDevice.gatt.connect();
                 const service = await server.getPrimaryService(UART_SERVICE_UUID);
@@ -250,53 +186,39 @@
             }
         });
 
-        function onDisconnected() {
-            statusText.innerText = "Disconnected";
-            dot.classList.remove('connected');
-            connectBtn.innerText = "Connect";
-            txCharacteristic = null;
-        }
-
         async function sendCommand(cmd) {
             if (!txCharacteristic) return;
             try {
                 let encoder = new TextEncoder();
-                // Adding a newline character as MakeCode usually reads "until new line"
-                await txCharacteristic.writeValueWithoutResponse(encoder.encode(cmd + "\n"));
+                // CRITICAL: using writeValueWithoutResponse and "#" delimiter
+                await txCharacteristic.writeValueWithoutResponse(encoder.encode(cmd + "#"));
                 console.log("Sent:", cmd);
             } catch (error) {
                 console.error("Send error", error);
             }
         }
 
-        // Attach Event Listeners to all controller buttons
         const buttons = document.querySelectorAll('.cmd-btn');
-        
         buttons.forEach(btn => {
             const command = btn.getAttribute('data-cmd');
 
-            // Handle Touch / Mouse Down (Send Command)
+            // Send command on press
             btn.addEventListener('pointerdown', (e) => {
-                btn.classList.add('active'); // Visual feedback
+                btn.classList.add('active');
                 sendCommand(command);
             });
 
-            // Handle Touch / Mouse Up (Send Stop command automatically for D-pad)
+            // Auto-stop when released (only for movement)
             btn.addEventListener('pointerup', (e) => {
                 btn.classList.remove('active');
-                // If it's a movement button, send 'S' (Stop) when released
-                if (['F', 'B', 'L', 'R'].includes(command)) {
-                    sendCommand('S'); 
-                }
+                if (['F', 'B', 'L', 'R'].includes(command)) { sendCommand('S'); }
             });
 
-            // Handle pointer leaving the button area while still held down
+            // Auto-stop if finger slides off the button
             btn.addEventListener('pointerleave', (e) => {
                 if(btn.classList.contains('active')) {
                     btn.classList.remove('active');
-                    if (['F', 'B', 'L', 'R'].includes(command)) {
-                        sendCommand('S'); 
-                    }
+                    if (['F', 'B', 'L', 'R'].includes(command)) { sendCommand('S'); }
                 }
             });
         });
