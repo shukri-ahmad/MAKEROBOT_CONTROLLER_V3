@@ -75,7 +75,6 @@
             transition: all 0.1s;
         }
         
-        /* The .active class allows us to trigger the visual press from the keyboard */
         .d-pad button:active, .d-pad button.active {
             transform: translateY(6px); box-shadow: 0 0 0 var(--btn-shadow), 0 0 15px var(--primary);
             background-color: var(--primary); color: black;
@@ -130,18 +129,18 @@
 
     <main id="gamepadArea">
         <div class="d-pad">
-            <button class="cmd-btn up" data-cmd="F">▲</button>
-            <button class="cmd-btn left" data-cmd="L">◀</button>
+            <button class="cmd-btn up" data-cmd="F" title="W or Up Arrow">▲</button>
+            <button class="cmd-btn left" data-cmd="L" title="A or Left Arrow">◀</button>
             <button class="cmd-btn stop" data-cmd="S">STOP</button>
-            <button class="cmd-btn right" data-cmd="R">▶</button>
-            <button class="cmd-btn down" data-cmd="B">▼</button>
+            <button class="cmd-btn right" data-cmd="R" title="D or Right Arrow">▶</button>
+            <button class="cmd-btn down" data-cmd="B" title="S or Down Arrow">▼</button>
         </div>
 
         <div class="action-pad">
-            <button class="cmd-btn btn-y" data-cmd="Y">Y</button>
-            <button class="cmd-btn btn-a" data-cmd="A">A</button>
-            <button class="cmd-btn btn-b" data-cmd="B_ACT">B</button>
-            <button class="cmd-btn btn-x" data-cmd="X">X</button>
+            <button class="cmd-btn btn-y" data-cmd="Y" title="Key: I">Y</button>
+            <button class="cmd-btn btn-a" data-cmd="A" title="Key: J or Spacebar">A</button>
+            <button class="cmd-btn btn-b" data-cmd="B_ACT" title="Key: K or Shift">B</button>
+            <button class="cmd-btn btn-x" data-cmd="X" title="Key: U">X</button>
         </div>
     </main>
 
@@ -184,7 +183,6 @@
                 dot.classList.add('connected');
                 connectBtn.innerText = "Disconnect";
                 
-                // Force focus on the body so keys are captured immediately
                 document.body.focus(); 
 
             } catch (error) {
@@ -233,23 +231,20 @@
         });
 
         // --- BULLETPROOF KEYBOARD CONTROLS ---
-        
         let currentlyPressedKey = null;
 
-        // Attach to both document and window just to be safe
         document.addEventListener('keydown', function(e) {
-            // Stop arrow keys from scrolling the webpage
-            if([37, 38, 39, 40].indexOf(e.keyCode) > -1) {
+            // Stop arrow keys AND spacebar (32) from scrolling the webpage
+            if([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
                 e.preventDefault();
             }
 
-            // Prevent repeat firing if held down
             if (e.repeat) return;
             
             let cmd = null;
             let btnClass = null;
 
-            // Check standard key names or fallback keyCodes
+            // MOVEMENT KEYS (WASD / Arrows)
             if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || e.keyCode === 38 || e.keyCode === 87) { 
                 cmd = 'F'; btnClass = '.up'; 
             }
@@ -261,6 +256,19 @@
             }
             else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D' || e.keyCode === 39 || e.keyCode === 68) { 
                 cmd = 'R'; btnClass = '.right'; 
+            }
+            // ACTION KEYS
+            else if (e.key === 'j' || e.key === 'J' || e.key === ' ' || e.keyCode === 74 || e.keyCode === 32) { 
+                cmd = 'A'; btnClass = '.btn-a'; // J or Spacebar
+            }
+            else if (e.key === 'k' || e.key === 'K' || e.key === 'Shift' || e.keyCode === 75 || e.keyCode === 16) { 
+                cmd = 'B_ACT'; btnClass = '.btn-b'; // K or Shift
+            }
+            else if (e.key === 'u' || e.key === 'U' || e.keyCode === 85) { 
+                cmd = 'X'; btnClass = '.btn-x'; // U
+            }
+            else if (e.key === 'i' || e.key === 'I' || e.keyCode === 73) { 
+                cmd = 'Y'; btnClass = '.btn-y'; // I
             }
 
             if (cmd && currentlyPressedKey !== cmd) {
@@ -274,8 +282,10 @@
 
         document.addEventListener('keyup', function(e) {
             let isMovementKey = false;
+            let isActionKey = false;
             let btnClass = null;
 
+            // Check Movement
             if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || e.keyCode === 38 || e.keyCode === 87) { 
                 isMovementKey = true; btnClass = '.up'; 
             }
@@ -288,109 +298,41 @@
             else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D' || e.keyCode === 39 || e.keyCode === 68) { 
                 isMovementKey = true; btnClass = '.right'; 
             }
+            // Check Actions
+            else if (e.key === 'j' || e.key === 'J' || e.key === ' ' || e.keyCode === 74 || e.keyCode === 32) { 
+                isActionKey = true; btnClass = '.btn-a'; 
+            }
+            else if (e.key === 'k' || e.key === 'K' || e.key === 'Shift' || e.keyCode === 75 || e.keyCode === 16) { 
+                isActionKey = true; btnClass = '.btn-b'; 
+            }
+            else if (e.key === 'u' || e.key === 'U' || e.keyCode === 85) { 
+                isActionKey = true; btnClass = '.btn-x'; 
+            }
+            else if (e.key === 'i' || e.key === 'I' || e.keyCode === 73) { 
+                isActionKey = true; btnClass = '.btn-y'; 
+            }
 
             if (isMovementKey) {
                 currentlyPressedKey = null;
-                sendCommand('S'); 
+                sendCommand('S'); // Send Stop command when letting go of directions
                 
+                const btn = document.querySelector(btnClass);
+                if (btn) btn.classList.remove('active');
+            } 
+            else if (isActionKey) {
+                currentlyPressedKey = null;
+                // We generally DO NOT send 'S' for action buttons so they can be read as single presses
+                // Just remove the visual glowing effect
                 const btn = document.querySelector(btnClass);
                 if (btn) btn.classList.remove('active');
             }
         });
         
-        // Final safety: if the browser window loses focus while a key is held down, stop the robot
         window.addEventListener('blur', function() {
             if (currentlyPressedKey) {
                 sendCommand('S');
                 currentlyPressedKey = null;
                 document.querySelectorAll('.cmd-btn').forEach(b => b.classList.remove('active'));
-            }
-        });
-    </script>
-        async function sendCommand(cmd) {
-            if (!txCharacteristic) return;
-            try {
-                let encoder = new TextEncoder();
-                let data = encoder.encode(cmd + "#");
-                
-                if (txCharacteristic.properties.writeWithoutResponse) {
-                    await txCharacteristic.writeValueWithoutResponse(data);
-                } else if (txCharacteristic.properties.write) {
-                    await txCharacteristic.writeValue(data);
-                }
-            } catch (error) {
-                console.error("Send error details:", error);
-            }
-        }
-
-        // --- MOUSE / TOUCH CONTROLS ---
-        const buttons = document.querySelectorAll('.cmd-btn');
-        buttons.forEach(btn => {
-            const command = btn.getAttribute('data-cmd');
-
-            btn.addEventListener('pointerdown', (e) => {
-                btn.classList.add('active');
-                sendCommand(command);
-            });
-
-            btn.addEventListener('pointerup', (e) => {
-                btn.classList.remove('active');
-                if (['F', 'B', 'L', 'R'].includes(command)) { sendCommand('S'); }
-            });
-
-            btn.addEventListener('pointerleave', (e) => {
-                if(btn.classList.contains('active')) {
-                    btn.classList.remove('active');
-                    if (['F', 'B', 'L', 'R'].includes(command)) { sendCommand('S'); }
-                }
-            });
-        });
-
-        // --- KEYBOARD CONTROLS (Updated to window listener for better reliability) ---
-        
-        // Keep track of which key is currently pressed so we don't spam commands
-        let currentKey = null;
-
-        window.addEventListener('keydown', (e) => {
-            // Ignore if they are holding the key down (prevents flooding bluetooth)
-            if (e.repeat) return; 
-            
-            let cmd = null;
-            let btnClass = null;
-            let key = e.key.toLowerCase();
-
-            if (key === 'arrowup' || key === 'w') { cmd = 'F'; btnClass = '.up'; }
-            else if (key === 'arrowdown' || key === 's') { cmd = 'B'; btnClass = '.down'; }
-            else if (key === 'arrowleft' || key === 'a') { cmd = 'L'; btnClass = '.left'; }
-            else if (key === 'arrowright' || key === 'd') { cmd = 'R'; btnClass = '.right'; }
-
-            if (cmd) {
-                currentKey = key;
-                sendCommand(cmd);
-                
-                // Visually press the button
-                const btn = document.querySelector(btnClass);
-                if (btn) btn.classList.add('active');
-            }
-        });
-
-        window.addEventListener('keyup', (e) => {
-            let key = e.key.toLowerCase();
-            let isMovementKey = false;
-            let btnClass = null;
-
-            if (key === 'arrowup' || key === 'w') { isMovementKey = true; btnClass = '.up'; }
-            else if (key === 'arrowdown' || key === 's') { isMovementKey = true; btnClass = '.down'; }
-            else if (key === 'arrowleft' || key === 'a') { isMovementKey = true; btnClass = '.left'; }
-            else if (key === 'arrowright' || key === 'd') { isMovementKey = true; btnClass = '.right'; }
-
-            if (isMovementKey) {
-                currentKey = null;
-                sendCommand('S'); // Stop robot when key is released
-                
-                // Visually un-press the button
-                const btn = document.querySelector(btnClass);
-                if (btn) btn.classList.remove('active');
             }
         });
     </script>
