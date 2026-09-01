@@ -19,6 +19,8 @@
             box-sizing: border-box;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
+            /* Prevents swipe-to-go-back and pull-to-refresh on mobile */
+            touch-action: none; 
         }
 
         body {
@@ -65,8 +67,34 @@
         }
         .btn-connect:active { background: var(--primary); color: #000; }
 
-        main { flex: 1; display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; }
+        /* --- RESPONSIVE LAYOUT --- */
+        main { 
+            flex: 1; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 20px 40px; 
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
 
+        .control-section {
+            display: flex;
+            flex: 1;
+            align-items: center;
+        }
+
+        /* Push controls to the edges on mobile landscape, center on desktop */
+        .control-section.left { justify-content: flex-start; }
+        .control-section.right { justify-content: flex-end; }
+
+        @media (min-width: 800px) {
+            .control-section.left { justify-content: center; }
+            .control-section.right { justify-content: center; }
+        }
+
+        /* --- BUTTON DESIGNS --- */
         .d-pad { display: grid; grid-template-columns: repeat(3, 70px); grid-template-rows: repeat(3, 70px); gap: 10px; }
         
         .d-pad button {
@@ -111,9 +139,18 @@
         .btn-1 { grid-column: 1; grid-row: 2; }
         .btn-2 { grid-column: 2; grid-row: 1; }
 
+        /* Mobile Portrait Layout Overrides */
         @media screen and (orientation: portrait) {
-            main { flex-direction: column; justify-content: center; gap: 50px; }
-            .action-pad { margin-top: 20px; }
+            main { 
+                flex-direction: column; 
+                justify-content: center; 
+                gap: 50px; 
+                padding: 10px;
+            }
+            .control-section.left, .control-section.right { 
+                justify-content: center; 
+                flex: none; /* Stop filling space vertically */
+            }
         }
     </style>
 </head>
@@ -128,19 +165,24 @@
     </header>
 
     <main id="gamepadArea">
-        <div class="d-pad">
-            <button class="cmd-btn up" data-cmd="F" title="W or Up Arrow">▲</button>
-            <button class="cmd-btn left" data-cmd="L" title="A or Left Arrow">◀</button>
-            <button class="cmd-btn stop" data-cmd="S">STOP</button>
-            <button class="cmd-btn right" data-cmd="R" title="D or Right Arrow">▶</button>
-            <button class="cmd-btn down" data-cmd="B" title="S or Down Arrow">▼</button>
+        <!-- Wrappers added here to perfectly align centers -->
+        <div class="control-section left">
+            <div class="d-pad">
+                <button class="cmd-btn up" data-cmd="F" title="W or Up Arrow">▲</button>
+                <button class="cmd-btn left" data-cmd="L" title="A or Left Arrow">◀</button>
+                <button class="cmd-btn stop" data-cmd="S">STOP</button>
+                <button class="cmd-btn right" data-cmd="R" title="D or Right Arrow">▶</button>
+                <button class="cmd-btn down" data-cmd="B" title="S or Down Arrow">▼</button>
+            </div>
         </div>
 
-        <div class="action-pad">
-            <button class="cmd-btn btn-4" data-cmd="4" title="Key: 4">4</button>
-            <button class="cmd-btn btn-2" data-cmd="2" title="Key: 2">2</button>
-            <button class="cmd-btn btn-1" data-cmd="1" title="Key: 1">1</button>
-            <button class="cmd-btn btn-3" data-cmd="3" title="Key: 3">3</button>
+        <div class="control-section right">
+            <div class="action-pad">
+                <button class="cmd-btn btn-4" data-cmd="4" title="Key: 4">4</button>
+                <button class="cmd-btn btn-2" data-cmd="2" title="Key: 2">2</button>
+                <button class="cmd-btn btn-1" data-cmd="1" title="Key: 1">1</button>
+                <button class="cmd-btn btn-3" data-cmd="3" title="Key: 3">3</button>
+            </div>
         </div>
     </main>
 
