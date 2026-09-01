@@ -1,187 +1,305 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>MAKEROBOT Controller</title>
-<style>
-*{box-sizing:border-box}
-body{margin:0;background:#f4f6f8;color:#17202a;font-family:Arial,Helvetica,sans-serif}
-header{background:#111827;color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px}
-.logo{font-size:22px;font-weight:800;letter-spacing:.5px}.status{font-size:13px;display:flex;align-items:center;gap:7px}
-.dot{width:10px;height:10px;border-radius:50%;background:#ef4444}.dot.connected{background:#22c55e}
-main{max-width:1050px;margin:auto;padding:18px}
-.card{background:#fff;border-radius:16px;padding:18px;margin-bottom:18px;box-shadow:0 3px 14px #00000010}
-h2{margin:0 0 12px;font-size:18px}
-button{border:0;border-radius:12px;padding:12px 18px;font-weight:700;font-size:15px;cursor:pointer;touch-action:none}
-.primary{background:#2563eb;color:#fff}.secondary{background:#e5e7eb;color:#111827}.danger{background:#dc2626;color:#fff}
-.controls{display:flex;gap:10px;flex-wrap:wrap}
-.controller{display:grid;grid-template-columns:90px 90px 90px;grid-template-rows:70px 70px 70px;gap:10px;justify-content:center;align-items:center;margin:12px auto}
-.controller button{height:70px;font-size:26px;padding:0}
-.up{grid-column:2}.left{grid-column:1;grid-row:2}.stop{grid-column:2;grid-row:2;background:#111827;color:#fff}.right{grid-column:3;grid-row:2}.down{grid-column:2;grid-row:3}
-.ab{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:280px;margin:15px auto}
-.ab button{height:55px}
-.readout{background:#0b1220;color:#dbeafe;border-radius:12px;min-height:230px;max-height:420px;overflow:auto;padding:14px;font-family:Consolas,monospace;font-size:14px}
-.row{padding:7px 0;border-bottom:1px solid #ffffff14;word-break:break-word}.row:last-child{border:0}.time{color:#94a3b8;margin-right:10px}
-.latest{font-size:24px;font-weight:800;background:#eef2ff;border-radius:12px;padding:16px;margin-bottom:12px;min-height:60px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-input{width:100%;padding:11px;border:1px solid #d1d5db;border-radius:9px;font-size:15px}
-.small{color:#64748b;font-size:13px;line-height:1.5}
-@media(max-width:700px){.grid{grid-template-columns:1fr}main{padding:12px}.controller{grid-template-columns:75px 75px 75px;grid-template-rows:65px 65px 65px}.controller button{height:65px}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Makerobot Pro Controller</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --panel-color: #1e1e24;
+            --primary: #00d2ff;
+            --danger: #ff0055;
+            --text: #ffffff;
+            --btn-bg: #2a2a35;
+            --btn-shadow: #000000;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none; /* Prevent text selection on mobile */
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Header & Connection Bar */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: var(--panel-color);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            color: var(--primary);
+            text-shadow: 0 0 10px rgba(0, 210, 255, 0.3);
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #status {
+            font-size: 0.9rem;
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #888;
+        }
+
+        .status-dot.connected { background-color: #00ff88; box-shadow: 0 0 8px #00ff88; }
+
+        .btn-connect {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-connect:active { background: var(--primary); color: #000; }
+
+        /* Gamepad Layout */
+        main {
+            flex: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+        }
+
+        /* D-Pad (Left Side) */
+        .d-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 70px);
+            grid-template-rows: repeat(3, 70px);
+            gap: 10px;
+        }
+
+        .d-pad button {
+            background-color: var(--btn-bg);
+            border: none;
+            border-radius: 15px;
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: 0 6px 0 var(--btn-shadow), 0 10px 15px rgba(0,0,0,0.5);
+            transition: all 0.1s;
+        }
+
+        .d-pad button:active {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 var(--btn-shadow), 0 0 15px var(--primary);
+            background-color: var(--primary);
+            color: black;
+        }
+
+        .up { grid-column: 2; grid-row: 1; border-radius: 15px 15px 5px 5px !important; }
+        .left { grid-column: 1; grid-row: 2; border-radius: 15px 5px 5px 15px !important; }
+        .right { grid-column: 3; grid-row: 2; border-radius: 5px 15px 15px 5px !important; }
+        .down { grid-column: 2; grid-row: 3; border-radius: 5px 5px 15px 15px !important; }
+        
+        .stop { 
+            grid-column: 2; grid-row: 2; 
+            border-radius: 50% !important; 
+            background: var(--danger) !important; 
+            font-size: 1rem !important;
+        }
+        .stop:active {
+            box-shadow: 0 0 0 var(--btn-shadow), 0 0 15px var(--danger) !important;
+        }
+
+        /* Action Buttons (Right Side) */
+        .action-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 60px);
+            grid-template-rows: repeat(3, 60px);
+            gap: 15px;
+            transform: rotate(45deg);
+        }
+
+        .action-pad button {
+            background-color: var(--btn-bg);
+            border: 2px solid #444;
+            border-radius: 50%;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+            box-shadow: inset 0 -4px 0 rgba(0,0,0,0.5), 0 5px 10px rgba(0,0,0,0.5);
+            transition: all 0.1s;
+            transform: rotate(-45deg); /* Keep text upright */
+        }
+
+        .action-pad button:active {
+            transform: rotate(-45deg) scale(0.9);
+            box-shadow: inset 0 0 0 rgba(0,0,0,0.5), 0 0 15px var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn-y { grid-column: 1; grid-row: 1; }
+        .btn-x { grid-column: 2; grid-row: 2; }
+        .btn-b { grid-column: 1; grid-row: 2; }
+        .btn-a { grid-column: 2; grid-row: 1; }
+
+        /* Mobile Landscape Enforcer */
+        @media screen and (orientation: portrait) {
+            main {
+                flex-direction: column;
+                justify-content: center;
+                gap: 50px;
+            }
+            .action-pad { margin-top: 20px; }
+        }
+    </style>
 </head>
 <body>
-<header>
-  <div class="logo">MAKEROBOT</div>
-  <div class="status"><span id="dot" class="dot"></span><span id="status">Disconnected</span></div>
-</header>
 
-<main>
-<section class="card">
-  <h2>Bluetooth</h2>
-  <div class="controls">
-    <button id="connect" class="primary">Connect micro:bit</button>
-    <button id="disconnect" class="secondary" disabled>Disconnect</button>
-    <button id="clear" class="secondary">Clear Data</button>
-    <button id="save" class="secondary">Save CSV</button>
-  </div>
-  <p class="small">The controller uses the micro:bit Nordic UART Service. Incoming UART text is displayed below while control commands are sent through the same Bluetooth connection.</p>
-</section>
+    <header>
+        <h1>MAKEROBOT PRO</h1>
+        <div class="controls">
+            <span id="status"><div class="status-dot" id="dot"></div> <span id="statusText">Disconnected</span></span>
+            <button id="connectBtn" class="btn-connect">Connect</button>
+        </div>
+    </header>
 
-<div class="grid">
-<section class="card">
-  <h2>Robot Control</h2>
-  <div class="controller">
-    <button class="up" data-cmd="F">▲</button>
-    <button class="left" data-cmd="L">◀</button>
-    <button class="stop" data-cmd="S">■</button>
-    <button class="right" data-cmd="R">▶</button>
-    <button class="down" data-cmd="B">▼</button>
-  </div>
-  <div class="ab">
-    <button class="primary" data-cmd="A">A</button>
-    <button class="primary" data-cmd="B">B</button>
-  </div>
-  <p class="small">Press and hold a direction/button to keep sending its command. Releasing it automatically sends <b>S</b> (stop), including A and B.</p>
-</section>
+    <main>
+        <!-- Directional Pad -->
+        <div class="d-pad">
+            <button class="cmd-btn up" data-cmd="F">▲</button>
+            <button class="cmd-btn left" data-cmd="L">◀</button>
+            <button class="cmd-btn stop" data-cmd="S">STOP</button>
+            <button class="cmd-btn right" data-cmd="R">▶</button>
+            <button class="cmd-btn down" data-cmd="B">▼</button>
+        </div>
 
-<section class="card">
-  <h2>Latest micro:bit Data</h2>
-  <div id="latest" class="latest">Waiting for data…</div>
-  <p class="small">Any string sent by the micro:bit through Bluetooth UART will appear here and in the data log.</p>
-</section>
-</div>
+        <!-- Action Pad -->
+        <div class="action-pad">
+            <button class="cmd-btn btn-y" data-cmd="Y">Y</button>
+            <button class="cmd-btn btn-a" data-cmd="A">A</button>
+            <button class="cmd-btn btn-b" data-cmd="B_ACT">B</button>
+            <button class="cmd-btn btn-x" data-cmd="X">X</button>
+        </div>
+    </main>
 
-<section class="card">
-  <h2>Received String Data</h2>
-  <div id="log" class="readout"><div class="small">No data received yet.</div></div>
-</section>
-</main>
+    <script>
+        // Web Bluetooth API Setup (Standard micro:bit UART Service)
+        const UART_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+        const UART_TX_CHAR_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
 
-<script>
-const UART_SERVICE='6e400001-b5a3-f393-e0a9-e50e24dcca9e';
-const UART_TX='6e400002-b5a3-f393-e0a9-e50e24dcca9e'; // browser -> micro:bit
-const UART_RX='6e400003-b5a3-f393-e0a9-e50e24dcca9e'; // micro:bit -> browser
+        let bluetoothDevice;
+        let txCharacteristic;
 
-let device=null,server=null,tx=null,rx=null,buffer='',records=[];
-const enc=new TextEncoder(),dec=new TextDecoder();
-const $=id=>document.getElementById(id);
+        const connectBtn = document.getElementById('connectBtn');
+        const statusText = document.getElementById('statusText');
+        const dot = document.getElementById('dot');
 
-function status(t,on=false){$('status').textContent=t;$('dot').classList.toggle('connected',on);$('connect').disabled=on;$('disconnect').disabled=!on}
-function safe(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+        connectBtn.addEventListener('click', async () => {
+            if (bluetoothDevice && bluetoothDevice.gatt.connected) {
+                bluetoothDevice.gatt.disconnect();
+                return;
+            }
 
-function addData(text){
-  if(!text)return;
-  records.push({time:new Date().toISOString(),data:text});
-  $('latest').textContent=text;
-  const placeholder=$('log').querySelector('.small');
-  if(placeholder && $('log').children.length===1 && placeholder.textContent.includes('No data')) $('log').innerHTML='';
-  const d=document.createElement('div');d.className='row';
-  d.innerHTML='<span class="time">'+new Date().toLocaleTimeString()+'</span>'+safe(text);
-  $('log').appendChild(d);$('log').scrollTop=$('log').scrollHeight;
-}
-function incoming(text){
-  buffer+=text;
-  const parts=buffer.split(/\r?\n/); buffer=parts.pop();
-  parts.forEach(addData);
-}
+            try {
+                statusText.innerText = "Connecting...";
+                bluetoothDevice = await navigator.bluetooth.requestDevice({
+                    filters: [{ namePrefix: 'BBC micro:bit' }, { namePrefix: 'Makerobot' }],
+                    optionalServices: [UART_SERVICE_UUID]
+                });
 
-async function connect(){
-  if(!navigator.bluetooth){alert('Web Bluetooth is not supported in this browser. Use Chrome or Edge on HTTPS/localhost.');return}
-  try{
-    status('Selecting…');
-    device=await navigator.bluetooth.requestDevice({
-      filters:[{services:[UART_SERVICE]}],optionalServices:[UART_SERVICE]
-    });
-    device.addEventListener('gattserverdisconnected',disconnected);
-    status('Connecting…');
-    server=await device.gatt.connect();
-    const service=await server.getPrimaryService(UART_SERVICE);
-    tx=await service.getCharacteristic(UART_TX);
-    rx=await service.getCharacteristic(UART_RX);
-    await rx.startNotifications();
-    rx.addEventListener('characteristicvaluechanged',e=>incoming(dec.decode(e.target.value)));
-    status('Connected: '+(device.name||'micro:bit'),true);
-  }catch(e){
-    console.error(e);status('Disconnected');
-    if(e.name!=='NotFoundError')alert('Bluetooth connection failed: '+e.message);
-  }
-}
-function disconnected(){tx=null;rx=null;server=null;status('Disconnected')}
-function disconnect(){if(device?.gatt?.connected)device.gatt.disconnect();else disconnected()}
+                bluetoothDevice.addEventListener('gattserverdisconnected', onDisconnected);
 
-async function send(cmd){
-  if(!tx || !device?.gatt?.connected)return;
-  try{
-    // newline makes the command easy to parse with micro:bit UART blocks/code
-    await tx.writeValue(enc.encode(cmd+'\\n'));
-  }catch(e){console.error('Send failed',e)}
-}
+                const server = await bluetoothDevice.gatt.connect();
+                const service = await server.getPrimaryService(UART_SERVICE_UUID);
+                txCharacteristic = await service.getCharacteristic(UART_TX_CHAR_UUID);
 
-const held=new Map();
-function startControl(btn){
-  const cmd=btn.dataset.cmd;if(held.has(btn))return;
-  send(cmd);
-  held.set(btn,setInterval(()=>send(cmd),120));
-}
-function stopControl(btn){
-  if(!held.has(btn))return;
-  clearInterval(held.get(btn));held.delete(btn);send('S');
-}
-document.querySelectorAll('[data-cmd]').forEach(btn=>{
-  btn.addEventListener('pointerdown',e=>{e.preventDefault();startControl(btn)});
-  btn.addEventListener('pointerup',e=>{e.preventDefault();stopControl(btn)});
-  btn.addEventListener('pointercancel',()=>stopControl(btn));
-  btn.addEventListener('pointerleave',()=>{if(e=>false){}});
-});
-window.addEventListener('pointerup',()=>held.forEach((_,btn)=>stopControl(btn)));
-window.addEventListener('blur',()=>held.forEach((_,btn)=>stopControl(btn)));
+                statusText.innerText = "Connected";
+                dot.classList.add('connected');
+                connectBtn.innerText = "Disconnect";
 
-document.addEventListener('keydown',e=>{
-  const map={ArrowUp:'F',ArrowDown:'B',ArrowLeft:'L',ArrowRight:'R',a:'A',A:'A',b:'B',B:'B', ' ':'S'};
-  if(map[e.key]){
-    e.preventDefault();
-    const btn=[...document.querySelectorAll('[data-cmd]')].find(x=>x.dataset.cmd===map[e.key]);
-    if(btn)startControl(btn);
-  }
-});
-document.addEventListener('keyup',e=>{
-  const map={ArrowUp:'F',ArrowDown:'B',ArrowLeft:'L',ArrowRight:'R',a:'A',A:'A',b:'B',B:'B'};
-  if(map[e.key]){
-    e.preventDefault();
-    const btn=[...document.querySelectorAll('[data-cmd]')].find(x=>x.dataset.cmd===map[e.key]);
-    if(btn)stopControl(btn);
-  }
-});
+            } catch (error) {
+                console.error("Connection failed", error);
+                statusText.innerText = "Failed";
+            }
+        });
 
-$('connect').onclick=connect;$('disconnect').onclick=disconnect;
-$('clear').onclick=()=>{$('log').innerHTML='<div class="small">No data received yet.</div>';$('latest').textContent='Waiting for data…';records=[];buffer=''};
-$('save').onclick=()=>{
-  const csv='timestamp,data\\n'+records.map(r=>`"${r.time}","${r.data.replaceAll('"','""')}"`).join('\\n');
-  const url=URL.createObjectURL(new Blob([csv],{type:'text/csv'})),a=document.createElement('a');
-  a.href=url;a.download='makerobot-data.csv';a.click();URL.revokeObjectURL(url);
-};
-window.addEventListener('beforeunload',()=>device?.gatt?.disconnect());
-</script>
+        function onDisconnected() {
+            statusText.innerText = "Disconnected";
+            dot.classList.remove('connected');
+            connectBtn.innerText = "Connect";
+            txCharacteristic = null;
+        }
+
+        async function sendCommand(cmd) {
+            if (!txCharacteristic) return;
+            try {
+                let encoder = new TextEncoder();
+                // Adding a newline character as MakeCode usually reads "until new line"
+                await txCharacteristic.writeValue(encoder.encode(cmd + "\n"));
+                console.log("Sent:", cmd);
+            } catch (error) {
+                console.error("Send error", error);
+            }
+        }
+
+        // Attach Event Listeners to all controller buttons
+        const buttons = document.querySelectorAll('.cmd-btn');
+        
+        buttons.forEach(btn => {
+            const command = btn.getAttribute('data-cmd');
+
+            // Handle Touch / Mouse Down (Send Command)
+            btn.addEventListener('pointerdown', (e) => {
+                btn.classList.add('active'); // Visual feedback
+                sendCommand(command);
+            });
+
+            // Handle Touch / Mouse Up (Send Stop command automatically for D-pad)
+            btn.addEventListener('pointerup', (e) => {
+                btn.classList.remove('active');
+                // If it's a movement button, send 'S' (Stop) when released
+                if (['F', 'B', 'L', 'R'].includes(command)) {
+                    sendCommand('S'); 
+                }
+            });
+
+            // Handle pointer leaving the button area while still held down
+            btn.addEventListener('pointerleave', (e) => {
+                if(btn.classList.contains('active')) {
+                    btn.classList.remove('active');
+                    if (['F', 'B', 'L', 'R'].includes(command)) {
+                        sendCommand('S'); 
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 </html>
